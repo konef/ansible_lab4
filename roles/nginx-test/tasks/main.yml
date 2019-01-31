@@ -1,0 +1,24 @@
+---
+  - name: verify install nginx
+    command: dpkg -s nginx
+    register: nginx_already_install
+    ignore_errors: True
+
+  - name: message of nginx
+    when: nginx_already_install | failed
+    debug:
+      msg: "nginx not install "
+
+
+  - name: message of nginx
+    when: nginx_already_install | succeeded
+    debug:
+      msg: "nginx already install"
+
+  - name: test ngnix
+    shell: curl 127.0.0.1
+    sudo: yes
+    register: nginx_output
+
+  - name: nginx output
+    debug: msg="{{ nginx_output.stdout }}" 

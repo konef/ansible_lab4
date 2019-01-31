@@ -1,0 +1,34 @@
+---
+  - name: verify install nginx
+    command: dpkg -s nginx
+    register: nginx_already_install
+    notify:
+      - nginx start
+      - nginx restart
+    ignore_errors: True
+
+  - name: install nginx
+    when: nginx_already_install | failed
+    apt:
+      name: nginx
+      update_cache: yes
+    sudo: yes
+    notify:
+      - nginx start
+    register: nginx_installed
+
+
+  - name: add nginx config
+    when: nginx_installed | success
+    template:
+      src: roles/nginx/template/tomcat.conf
+      dest: /etc/nginx/conf.d/tomcat.conf
+    notify:
+      - nginx restart
+    sudo: yes
+
+  - name: restart nginx
+    service:
+      name: nginx
+      state: restarted
+    sudo: yes    

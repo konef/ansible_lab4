@@ -1,0 +1,46 @@
+---
+  - name: verify install java
+    command: dpkg -s oracle-java{{ java_version }}-set-default
+    register: java_already_install
+    ignore_errors: True
+
+  - name: update
+    when: java_already_install | failed
+    shell: apt-get update -y
+    sudo: yes
+
+  - name: update python
+    when: java_already_install | failed
+    shell: apt-get install python-software-properties -y
+    sudo: yes
+
+  - name: updating and installing java repo
+    when: java_already_install | failed
+    shell:
+        add-apt-repository ppa:webupd8team/java -y
+    args:
+        executable: /bin/bash
+    sudo: yes
+    register: repo_add
+
+  - name: apt-get update
+    when: java_already_install | failed
+    apt:
+      update_cache: yes
+    sudo: yes
+    register: update_cache
+
+  - name: accept java license
+    when: java_already_install | failed
+    debconf: name="oracle-java{{ java_version }}-installer" question='shared/accepted-oracle-license-v1-1' value='true' vtype='select'
+    sudo: yes
+    register: license_accept
+
+  - name: install oracle java
+    when: java_already_install | failed
+    apt: name={{item}} state=latest
+    with_items:
+      - "oracle-java{{ java_version }}-installer"
+      - ca-certificates
+      - "oracle-java{{ java_version }}-set-default"
+    sudo: yes

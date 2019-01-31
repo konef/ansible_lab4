@@ -1,0 +1,12 @@
+--- 
+  - name: Deploy
+    hosts: konev
+    tasks:
+    - name: deploy war
+      deploy_war:
+        url: http://127.0.0.1:8080
+        username: tomcat
+        password: tomcat
+        context: /helloworld
+        src: /home/vagrant/1/hello-war/target/mnt-lab.war
+      

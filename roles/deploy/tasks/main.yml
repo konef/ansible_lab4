@@ -1,0 +1,14 @@
+---
+  - name: install curl
+    apt:
+      name: curl
+      update_cache: yes
+    become: yes
+    become_method: sudo
+
+  - name: deploy
+    deploy:
+      user: admin
+      password: tomcat
+      war: "/vagrant/hello-war/target/mnt-lab.war"
+      url: "http://127.0.0.1:8080/manager/text/deploy?path=/mnt-lab&update=true"

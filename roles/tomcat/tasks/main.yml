@@ -1,0 +1,69 @@
+---
+  - name: create group tomcat
+    group:
+      name: '{{ user_name }}'
+      state: present
+    register: create_group_tomcat
+    sudo: yes
+
+
+  - name: create user tomcat
+    when: create_group_tomcat
+    user:
+      name: '{{ user_name }}'
+      groups: '{{ user_name }}'
+      shell: /bin/bash
+      createhome: no
+      system: yes
+    sudo: yes
+
+
+  - name: create folder
+    file:
+      path: /opt/{{ user_name }}
+      owner: '{{ user_name }}'
+      group: '{{ user_name }}'
+      state: directory
+    ignore_errors: True
+    register: result
+    sudo: yes
+
+
+  - name: download tomcat
+    get_url:
+      url: https://archive.apache.org/dist/tomcat/tomcat-8/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz
+      dest: /home/vagrant/
+
+
+
+  - name: verify created folder
+    command: ls /home/vagrant/apache-tomcat-{{ tomcat_version }}
+    register: folders_already_created
+    ignore_errors: True
+
+  - name: untar tomcat
+    when: folders_already_created | failed
+    unarchive:
+      src: /home/vagrant/apache-tomcat-{{ tomcat_version }}.tar.gz
+      dest: /home/vagrant
+      owner: '{{ user_name }}'
+      group: '{{ user_name }}'
+      remote_src: True
+    sudo: yes
+
+
+  - name: create symlink and chown
+    file:
+      src: /home/vagrant/apache-tomcat-{{ tomcat_version }}
+      dest: /opt/{{ user_name }}
+      owner: '{{ user_name }}'
+      group: '{{ user_name }}'
+      state: link
+      force: yes
+    sudo: yes
+
+
+  - name: run tomcate
+    shell: nohup bash /opt/{{ user_name }}/bin/startup.sh
+    become: yes
+    become_user: root

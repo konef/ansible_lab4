@@ -1,0 +1,16 @@
+---
+  - name: verify install java
+    command: dpkg -s oracle-java{{ java_version }}-set-default
+    register: java_already_install
+    ignore_errors: True
+
+  - name: message of java
+    when: java_already_install | failed
+    debug:
+      msg: "java not install "
+
+
+  - name: message of java
+    when: java_already_install | succeeded
+    debug:
+      msg: "java already install"

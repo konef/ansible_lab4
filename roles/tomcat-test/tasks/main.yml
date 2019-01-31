@@ -1,0 +1,28 @@
+---
+  - name: verify created folder
+    command: ls /home/vagrant/apache-tomcat-{{ tomcat_version }}
+    register: folders_already_created
+    ignore_errors: True
+
+  - name: message of tomcat
+    when: folders_already_created | failed
+    debug:
+      msg: "tomcat not install "
+
+
+  - name: message of tomcat
+    when: folders_already_created | succeeded
+    debug:
+      msg: "tomcat already install"
+
+  - name: install curl
+    shell: apt-get install curl -y
+    sudo: yes
+
+  - name: test tomcat
+    shell: curl 127.0.0.1:8080
+    sudo: yes
+    register: tomcat_output
+
+  - name: tomcat output
+    debug: msg="{{ tomcat_output.stdout }}"
